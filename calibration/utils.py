@@ -67,7 +67,7 @@ def image_size(path):
     """Get the dimensions of an image on disk."""
     img = cv2.imread(path)
     x, y = img.shape[:2]
-    return tuple(x, y)
+    return tuple([x, y])
 
 
 def to_numpy(x):
