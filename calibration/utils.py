@@ -121,9 +121,9 @@ def align_targets(T):
 # -----------------------------------------------------------------------------
 
 
-def mat2quat(M):
+def mat2quat(R):
     """ Rotation matrix to quaternion"""
-    Qxx, Qyx, Qzx, Qxy, Qyy, Qzy, Qxz, Qyz, Qzz = M.flat
+    Qxx, Qyx, Qzx, Qxy, Qyy, Qzy, Qxz, Qyz, Qzz = R.flat
 
     K = np.array([
         [Qxx - Qyy - Qzz, 0,               0,               0],
@@ -136,7 +136,6 @@ def mat2quat(M):
     vals, vecs = np.linalg.eigh(K)
     # Select largest eigenvector, reorder to w,x,y,z quaternion
     q = vecs[[3, 0, 1, 2], np.argmax(vals)]
-
     return q if q[0] > 0 else q * -1
 
 
