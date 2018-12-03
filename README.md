@@ -1,12 +1,24 @@
 # Calibration Utilities
 
-Python scripts to geometrically calibrate cameras. Using the algorithms in OpenCV, cameras can be geometrically calibrated individually, or as a group - such as in a stereo rig.
+Python scripts to geometrically calibrate cameras.
+Using the algorithms in OpenCV, cameras can be geometrically calibrated
+individually, or as a group - such as in a stereo rig. The calibration can be
+saved to a file - or to std out. The calibration is valid yaml, so can be used
+in other applications using openCV, or elsewhere. The JSON save option includes
+the locations of the observed targets in 2d pixel space, and in 3d world space.
 
 The command line interface is invoked with:
 
     python calibrate.py --help
 
-to produce the documentation:
+A simple example of calibrating a single camera:
+
+    python calibrate.py cam 9 5 0.02  scene_1a/centre
+
+*If there are no corners found in the target images, the most likely reason is
+incorrect settings of the target rows / cols.*
+
+## Documentation
 
     Usage: calibrate.py [OPTIONS] COMMAND [ARGS]...
 
@@ -21,6 +33,32 @@ to produce the documentation:
     Commands:
     cam  Calibrate a Camera from a folder that...
     rig  Calibrate a 'Rig' from a list of folders that...
+
+## Calibrate a single camera
+
+    Usage: calibrate.py cam [OPTIONS] TARGET... PATH
+
+    Calibrate a Camera from a folder that contains images of camera
+    calibration targets.
+
+    target [int, int, float] -- List of target parameters: rows cols size
+    path str -- image directory ...
+
+
+## Calibrate a rig of many cameras
+
+    Usage: calibrate.py rig [OPTIONS] TARGET... [PATHS]...
+
+    Calibrate a 'Rig' from a list of folders that contain images of camera
+    calibration targets.
+
+    target [int, int, float] -- List of target parameters: rows cols size
+    paths  [str, str, ...] -- List of image directories ...
+
+    Options:
+    -cm, --colmap PATH  path to save COLMAP model - a folder with 3 text files.
+    --help              Show this message and exit.
+
 
 ## Requirements
 
