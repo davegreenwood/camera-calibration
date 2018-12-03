@@ -4,13 +4,11 @@ import os
 import json
 import yaml
 import cv2
-from itertools import combinations
-from collections import OrderedDict
+
 from .utils import yield_path_list, object_points, align_targets
 from .utils import find_corners_fname, image_size
 from .utils import CalibUtils, to_numpy, mat2quat
 from .camera import Camera
-from .database import COLMAPDatabase
 
 logger = logging.getLogger(__name__)
 
