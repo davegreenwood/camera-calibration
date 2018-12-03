@@ -1,6 +1,7 @@
 """
 Module to calibrate camera intrinsics from folder of checkerboard images.
 """
+# pylint: disable=E1120
 import logging
 import click
 from calibration.rig import calibrate as calib_rig
@@ -117,5 +118,4 @@ def cam(config, target, path):
 
 
 if __name__ == "__main__":
-    # pylint: disable=E1120
     cli()
