@@ -121,6 +121,18 @@ def align_targets(T):
 # -----------------------------------------------------------------------------
 
 
+def rodrigues(r):
+    """Convert rotation from vector to matrix or matrix to rotation vector.
+
+    Arguments:
+        r {numpy array} -- Either a rotion vector or matrix.
+
+    Returns:
+        numpy array -- rotation matrix or vector - the conversion of the input.
+    """
+    return np.asarray(cv2.Rodrigues(np.asfarray(r))[0])
+
+
 def mat2quat(R):
     """ Rotation matrix to quaternion"""
     Qxx, Qyx, Qzx, Qxy, Qyy, Qzy, Qxz, Qyz, Qzz = R.flat
@@ -137,26 +149,6 @@ def mat2quat(R):
     # Select largest eigenvector, reorder to w,x,y,z quaternion
     q = vecs[[3, 0, 1, 2], np.argmax(vals)]
     return q if q[0] > 0 else q * -1
-
-
-def rodrigues(r):
-    """Rotation vector to matrix."""
-    def S(n):
-        Sn = np.array([[0, -n[2], n[1]],
-                       [n[2], 0, -n[0]],
-                       [-n[1], n[0], 0]])
-        return Sn
-
-    theta = np.linalg.norm(r)
-    if theta > 1e-30:
-        n = r/theta
-        Sn = S(n)
-        R = np.eye(3) + np.sin(theta) * Sn + (1-np.cos(theta)) * np.dot(Sn, Sn)
-    else:
-        Sr = S(r)
-        theta2 = theta**2
-        R = np.eye(3) + (1-theta2/6.) * Sr + (.5-theta2/24.) * np.dot(Sr, Sr)
-    return R
 
 
 def r2q(r):
