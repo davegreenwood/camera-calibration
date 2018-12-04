@@ -50,14 +50,14 @@ class Camera(CalibUtils):
     criteria = (cv2.TERM_CRITERIA_MAX_ITER +
                 cv2.TERM_CRITERIA_EPS, 30, 1e-6)
 
-    obj_pts, img_pts, images, dist = [], [], [], []
+    obj_pts, img_pts, images = [], [], []
     img_size, brd_size, sqr_size = (), (), 1.
 
     def __init__(self, params=None):
         super(Camera, self).__init__()
-        self.K = np.zeros([3, 3], dtype=np.float32)
+        self.K = np.eye(3, dtype=np.float32)
         self.dist = np.zeros(5, dtype=np.float32)
-        self.R = np.eye(3)
+        self.R = np.eye(3, dtype=np.float32)
         self.t = np.zeros([3, 1])
         self._set()
 
