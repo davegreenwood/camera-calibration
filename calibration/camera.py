@@ -134,6 +134,39 @@ class Camera(CalibUtils):
         d['rms'] = self.rms
         return d
 
+    def project_points(self, points3d):
+        # transform
+        pts = (self.R.dot(points3d.T) + self.t.reshape(3, 1)).T
+        # project
+        pts = pts[:, :2] / pts[:, 2:]
+        # simple radial distortion
+        r2 = np.square(pts).sum(1).reshape(-1, 1)
+        d = 1 + self.k1 * r2
+        return pts * d * self.fx + np.array([self.cx, self.cy])
+
+    def bundle_cam(self, rt=False):
+        result = [self.fx, self.k1]
+        if not rt:
+            return result
+        r = rodrigues(self.R).flatten().tolist()
+        t = self.t.flatten().tolist()
+        return result + r + t
+
+    def load_bundle_cam(self, f, k1, rx, ry, rz, tx, ty, tz):
+        self.K[0, 0], self.K[1, 1] = f, f
+        self.dist = np.array([k1, 0, 0, 0, 0], np.float32)
+        self.R = rodrigues(np.asarray([rx, ry, rz]))
+        self.t = np.asarray([tx, ty, tz]).reshape([3, 1])
+        self._set()
+
+    def simple_radial(self, rt=False):
+        result = [self.fx, self.cx, self.cy, self.k1]
+        if not rt:
+            return result
+        r = rodrigues(self.R).flatten().tolist()
+        t = self.t.flatten().tolist()
+        return result + r + t
+
     def colmap_camera(self):
         h, w = self.img_size
-        return 2, w, h, np.array([self.fx, self.cx, self.cy, self.k1])
+        return 2, w, h, np.array(self.simple_radial())
