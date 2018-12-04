@@ -90,9 +90,9 @@ class Camera(CalibUtils):
         def f(r, t, p):
             R = rodrigues(r)
             return (R.dot(p.T) + t.reshape(-1, 1)).T
-        rv, tv, pts = self.rvecs, self.tvecs, self.obj_pts
         world_pts = to_numpy(
-            [f(r, t, p) for r, t, p in zip(rv, tv, pts)])
+                    [f(r, t, p) for r, t, p in zip(
+                    self.rvecs, self.tvecs, self.obj_pts)])
         self.world_pts = world_pts.reshape([-1, 3])
         return self.world_pts
 
