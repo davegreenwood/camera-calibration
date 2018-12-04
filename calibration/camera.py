@@ -110,6 +110,7 @@ class Camera(CalibUtils):
         self.tvecs = to_numpy(t)
         self.rms = rms
         self._set()
+        self.world3d()
         logger.info('Calibration RMS: {}'.format(rms))
         return rms
 
