@@ -53,8 +53,8 @@ config = click.make_pass_decorator(Config, ensure=True)
 @click.option('--json', '-j', type=click.File('w'), default=None,
               help='path to save JSON')
 @click.option('--out', '-o', type=click.File('w'), default='-',
-              help='Filename to save calibration, or leave empty for stdout. ' +
-              'Out is valid yaml - so can be parsed easily.')
+              help='Filename to save calibration, or leave empty for stdout. \
+              Out is valid yaml - so can be parsed easily.')
 @config
 def cli(config, verbose, extn, json, out):
     config.verbose = verbose
@@ -67,10 +67,13 @@ def cli(config, verbose, extn, json, out):
 @cli.command()
 @click.argument('target', nargs=3)
 @click.argument('paths', type=click.Path(exists=True), nargs=-1)
+@click.option('--bundle', '-bn', is_flag=True,
+                help='bundle adjustment of the solution - \
+                optimise the 3D positions and intrinsic parameters.')
 @click.option('--colmap', '-cm', type=click.Path(), default=None,
-              help='path to save COLMAP model - a folder with 3 text files.')
+                help='path to save COLMAP model - a folder with 3 text files.')
 @config
-def rig(config, target, paths, colmap):
+def rig(config, target, paths, colmap, bundle):
     """
     Calibrate a 'Rig' from a list of folders that contain images of
     camera calibration targets.
@@ -83,6 +86,8 @@ def rig(config, target, paths, colmap):
         paths, rows, cols, sz)
     logger.info(info)
     rig = calib_rig(paths, rows, cols, sz, extn=config.extn)
+    if bundle:
+        rig.bundle()
     click.echo('#result\n{}'.format(rig), file=config.out)
     if config.json:
         rig.save_json(None, fid=config.json)
