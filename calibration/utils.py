@@ -125,7 +125,7 @@ def rodrigues(r):
     """Convert rotation from vector to matrix or matrix to rotation vector.
 
     Arguments:
-        r {numpy array} -- Either a rotion vector or matrix.
+        r {numpy array} -- Either a rotation vector or matrix.
 
     Returns:
         numpy array -- rotation matrix or vector - the conversion of the input.
