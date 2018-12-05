@@ -11,13 +11,6 @@ The command line interface is invoked with:
 
     python calibrate.py --help
 
-A simple example of calibrating a single camera:
-
-    python calibrate.py cam 9 5 0.02  scene_1a/centre
-
-*If there are no corners found in the target images, the most likely reason is
-incorrect settings of the target rows / cols.*
-
 ## Documentation
 
     Usage: calibrate.py [OPTIONS] COMMAND [ARGS]...
@@ -36,6 +29,13 @@ incorrect settings of the target rows / cols.*
 
 ## Calibrate a single camera
 
+A simple example of calibrating a single camera:
+
+    python calibrate.py cam 9 5 0.02  scene_1a/centre
+
+*If there are no corners found in the target images, the most likely reason is
+incorrect settings of the target rows or cols.*
+
     Usage: calibrate.py cam [OPTIONS] TARGET... PATH
 
     Calibrate a Camera from a folder that contains images of camera
@@ -47,6 +47,15 @@ incorrect settings of the target rows / cols.*
 
 ## Calibrate a rig of many cameras
 
+Calibrating a rig is quite similar, but here pass multiple image folders:
+
+    python calibrate.py rig 9 5 0.02 scene_1a/centre scene_1a/left scene_1a/right
+
+There is an option to perform bundle adjustment on a rig :
+
+    python calibrate.py rig  9 5 0.015 scene_1a/centre scene_1a/left scene_1a/right --bundle
+
+
     Usage: calibrate.py rig [OPTIONS] TARGET... [PATHS]...
 
     Calibrate a 'Rig' from a list of folders that contain images of camera
@@ -56,6 +65,8 @@ incorrect settings of the target rows / cols.*
     paths  [str, str, ...] -- List of image directories ...
 
     Options:
+    -bn, --bundle       bundle adjustment of the solution -
+                        optimise the 3D positions and intrinsic parameters.
     -cm, --colmap PATH  path to save COLMAP model - a folder with 3 text files.
     --help              Show this message and exit.
 
