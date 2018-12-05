@@ -112,8 +112,10 @@ class Rig(CalibUtils):
             logger.warn(
                 'Need at least two cameras to do calibration. Quitting...')
             return
+        self.transforms = []
         for c in self.cameras[1:]:
             self.transforms.append(stereo_calibrate(self.cameras[0], c))
+        self.pts3D = self.cameras[0].world_pts.copy()
 
     def to_dict(self, compact=False):
         """Convert to dictionary without numpy arrays """
@@ -128,6 +130,79 @@ class Rig(CalibUtils):
         cameras = [c.to_dict(compact) for c in self.cameras]
         transforms = [f(t) for t in self.transforms]
         return dict(intrinsics=cameras, extrinsics=transforms)
+
+# -----------------------------------------------------------------------------
+# bundle adjustment
+# -----------------------------------------------------------------------------
+
+    def bundle(self):
+        x0 = self.get_params()
+        res = least_squares(self.fun, x0,
+                            jac='3-point',
+                            verbose=2,
+                            x_scale='jac',
+                            ftol=1e-3)
+        self.load_params(res.x)
+
+    def fun(self, params):
+        self.load_params(params)
+        # residuals
+        return np.array([c.img_pts.reshape([-1, 2]) -
+                         c.project_points(self.pts3D)
+                         for c in self.cameras]).flatten().tolist()
+
+    def sparsity(self):
+        n_cameras = len(self.cameras)
+        n_residuals = self.cameras[0].img_pts.size * n_cameras
+        n_params = self.pts3D.size - 6 + n_cameras * 8
+        k = n_residuals // n_cameras
+        A = lil_matrix((n_residuals, n_params), dtype=int)
+        # first camera
+        A[:k, :2] = 1
+        # next cameras
+        for i in range(n_cameras - 1):
+            g, h = k + k * i, k + k + k * i
+            a, b = 2 + 8 * i, 8 + 2 + 8 * i
+            A[g:h, a:b] = 1
+        k = b
+        # all the residuals are affected by the 3Dpts
+        for i in range(n_residuals//2):
+            g, h = i * 2, i * 2 + 2
+            a, b = k + i, k + i + 3
+            A[g:h, a:b] = 1
+        logger.info('Residuals: {}, Params: {}'.format(n_residuals, n_params))
+        return A
+
+    def load_params(self, params):
+        # cameras
+        fx, k1 = params[:2]
+        self.cameras[0].load_bundle_cam(fx, k1, 0, 0, 0, 0, 0, 0)
+        for i, c in enumerate(self.cameras[1:]):
+            k = 2 + i * 8
+            f, k1, rx, ry, rz, tx, ty, tz = params[k:k+8]
+            c.load_bundle_cam(f, k1, rx, ry, rz, tx, ty, tz)
+        # points
+        n = 2 + (len(self.cameras) - 1) * 8
+        self.pts3D = np.array(params[n:], np.float32).reshape(-1, 3)
+
+    def get_params(self):
+        """Return rig parameters as a list:
+        The first part of the list are the cameras, with the first camera
+        having f, cx, cy, k1 only - as we hold extrinsics at the origin.
+        Subsequent cameras have f, cx, cy, k1, r, t. After the cameras we
+        have the 3D points, which are the world points of the first camera
+        originally - but we will adjust them according to the observations
+        in the images.
+        """
+        params = self.cameras[0].bundle_cam()
+        for c in self.cameras[1:]:
+            params += c.bundle_cam(rt=True)
+        params += self.pts3D.flatten().tolist()
+        return params
+
+# -----------------------------------------------------------------------------
+# COLMAP export
+# -----------------------------------------------------------------------------
 
     def colmap_points3d(self):
         h = '# 3D point list with one line of data per point:\n' + \
