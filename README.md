@@ -78,4 +78,6 @@ The software has a number of dependencies:
 * Python > 3.6
 * OpenCV > 3.3
 * Numpy
+* Scipy
+* PyYaml
 * Click
